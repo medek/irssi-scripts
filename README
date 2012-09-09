@@ -1,0 +1,25 @@
+Made this cause I hate stuff beeping at me and prefer visual notification.
+This also handles notify.pl not firing while you're actually focused on
+the clients terminal window (hence the small modification).
+
+notify.pl slightly modified so I can turn it off when the window has focus.
+
+systemtray.pl currently has 2 options.
+boolean - systemtray_update - default: on
+		Actually process data levels and focus.
+		Should really seperate them into seperate options.
+
+boolean - systemtray_goto_status - default: on
+		Go to the status page so all channels can highlight
+		to provide correct data level inspection.
+		The currently focused channel doesn't change
+		data levels.
+
+Bugs/Issues
+
+This cannot track focus through screen, say you create in one window;
+destroy it and reattach to screen in another. focus tracking won't work
+as the window id is now invalid; use /systemtray_get_new_id to get the latest.
+Maybe that can be automated?
+
+Probably some more I can't think off...
