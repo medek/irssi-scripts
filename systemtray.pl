@@ -6,8 +6,6 @@ use Gtk2 -init;
 use MIME::Base64;
 my $status = 0;
 my $focused = 0;
-
-my $win_id;
 my $iwin;
 my $timer;
 
@@ -18,7 +16,7 @@ my $hilight;
 my $image;
 on_load();
 
-$VERSION = "0.01";
+$VERSION = "0.02";
 %IRSSI = (
 	authors 	=> 'Gavin Massey',
 	contact 	=> 'mdk@mystacktrace.org',
@@ -28,68 +26,37 @@ $VERSION = "0.01";
 	url 		=> 'https://github.com/medek/irssi-scripts',
 );
 
-sub get_focused_id {
-	open(DIR, "xdpyinfo | grep focus|");
-	my $out = "";
-	while(<DIR>)
+sub sig_focus {
+	$focused = @_[0];
+	if($focused == 1)
 	{
-		$out = $out . $_;
-	}
-	close(DIR);
-	$out =~ m/focus:.*?(0x[0-9a-f]*)/;
-	return $1;
-}
-
-sub focus_processing {
-	if(get_focused_id() eq $win_id)
-	{
-		$focused = 1;
+		$image->set_from_pixbuf($noalert);
+		if(Irssi::settings_get_bool('systemtray_goto_status') == 1)
+		{
+			if($iwin != undef)
+			{
+				$iwin->set_active();
+			}
+		}
+		return;	
 	}
 	else
 	{
-		$focused = 0;
+		$status = -1;
+		if(Irssi::settings_get_bool('systemtray_goto_status') == 1)
+		{
+			$iwin = Irssi::active_win;
+			Irssi::active_win->{active_server}->command("WINDOW goto (status)");	
+		}
 	}
 }
 
 sub window_processing {
-	if(Irssi::settings_get_bool('systemtray_update') != 1)
+	if(Irssi::settings_get_bool('systemtray_update') != 1 || $focused == 1)
 	{
 		return;
 	}
-	my $old_focused = $focused;
-	$focused = 0;
-	focus_processing();
-	if($focused != $old_focused)
-	{
-		if($focused == 1)
-		{
-			Irssi::active_win->{active_server}->command("SET notify_enabled off");
-			$image->set_from_pixbuf($noalert);
-			if(Irssi::settings_get_bool('systemtray_goto_status') == 1)
-			{
-				if($iwin != undef)
-				{
-					$iwin->set_active();
-				}
-			}
-			return;
-		}
-		else
-		{
-			Irssi::active_win->{active_server}->command("SET notify_enabled on");
-			$status = -1;
-			if(Irssi::settings_get_bool('systemtray_goto_status') == 1)
-			{
-				$iwin = Irssi::active_win;
-				Irssi::active_win->{active_server}->command("WINDOW goto (status)");	
-			}
-		}
-	}
-
-	if($focused == 1)
-	{
-		return;
-	}
+	
 	my $old_status = $status;
 	$status = 0;
 	foreach my $win (Irssi::windows())
@@ -127,23 +94,17 @@ sub on_load {
 	$image = Gtk2::Image->new_from_pixbuf($noalert);
 	$systray->add($image);
 	$systray->show_all;
-}
-#This is here because we have to wait a little before doing any
-#operational setup beyond Gtk2 stuff.
-sub deferred_setup {
-	Irssi::signal_remove('window created', 'deferred_setup');
-	$win_id = get_focused_id();
 	$timer = Irssi::timeout_add(200, 'window_processing', undef);
+	Irssi::signal_add('focus change', 'sig_focus');
 }
 
 #this is probably wrong...
 sub unload {
+	Irssi::signal_remove('focus change', 'sig_focus');	
+	Irssi::timeout_remove($timer);
 	$systray->hide_all;
 }
 
-sub get_new_id {
-	$win_id = get_focused_id();
-}
 
 sub build_icons {
 	my $loader = Gtk2::Gdk::PixbufLoader->new;
@@ -191,5 +152,3 @@ vF4zkrvnGa0M8AnN13JSuXsiGwAAAABJRU5ErkJggg=='));
 Irssi::settings_add_bool('systemtray', 'systemtray_goto_status', 1);
 Irssi::settings_add_bool('systemtray', 'systemtray_update', 1);
 Irssi::signal_add_first('command script unload', 'unload');
-Irssi::signal_add('window created', 'deferred_setup');
-Irssi::command_bind('systemtray_get_new_id', 'get_new_id');

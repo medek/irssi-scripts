@@ -2,7 +2,9 @@ Made this cause I hate stuff beeping at me and prefer visual notification.
 This also handles notify.pl not firing while you're actually focused on
 the clients terminal window (hence the small modification).
 
-notify.pl slightly modified so I can turn it off when the window has focus.
+notify.pl slightly modified so it receives for 'focus change' signals
+and has a setting variable notify_enabled so it can be turned on/off
+explicitly.
 
 systemtray.pl currently has 2 options.
 boolean - systemtray_update - default: on
@@ -19,7 +21,11 @@ Bugs/Issues
 
 This cannot track focus through screen, say you create in one window;
 destroy it and reattach to screen in another. focus tracking won't work
-as the window id is now invalid; use /systemtray_get_new_id to get the latest.
+as the window id is now invalid; use /focus_get_new_id to get the latest.
 Maybe that can be automated?
+
+Launching irssi in a terminal that doesn't have focus won't work. When launching
+it thinks the currently active window has focus. again use /focus_get_new_id to
+fix.
 
 Probably some more I can't think off...

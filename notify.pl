@@ -12,16 +12,18 @@ use HTML::Entities;
 
 $VERSION = "0.01";
 %IRSSI = (
-    authors     => 'Luke Macken, Paul W. Frields',
-    contact     => 'lewk@csh.rit.edu, stickster@gmail.com',
+    authors     => 'Luke Macken, Paul W. Frields, Gavin Massey',
+    contact     => 'lewk@csh.rit.edu, stickster@gmail.com, mdk@mystacktrace.org',
     name        => 'notify.pl',
     description => 'Use libnotify to alert user to hilighted messages',
     license     => 'GNU General Public License',
     url         => 'http://lewk.org/log/code/irssi-notify',
 );
+my $focus = 0;
 
 #Irssi::settings_add_str('notify', 'notify_icon', 'gtk-dialog-info');
 Irssi::settings_add_str('notify', 'notify_time', '5000');
+Irssi::settings_add_bool('notify', 'notify_enabled', 1);
 
 sub sanitize {
   my ($text) = @_;
@@ -29,8 +31,12 @@ sub sanitize {
   return $text;
 }
 
+sub sig_focus {
+	$focus = @_[0];
+}
+
 sub notify {
-    if(Irssi::settings_get_bool('notify_enabled') != 1)
+    if(Irssi::settings_get_bool('notify_enabled') != 1 || $focus != 0)
     {
         return;
     }
@@ -76,7 +82,8 @@ sub dcc_request_notify {
     notify($server, "DCC ".$dcc->{type}." request", $dcc->{nick});
 }
 
-Irssi::settings_add_bool('notify', 'notify_enabled', 1);
+Irssi::signal_add_first('focus change', 'sig_focus');
 Irssi::signal_add('print text', 'print_text_notify');
 Irssi::signal_add('message private', 'message_private_notify');
 Irssi::signal_add('dcc request', 'dcc_request_notify');
+
