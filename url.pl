@@ -41,7 +41,7 @@ sub url_command
 	{
 		return;
 	}
-	Irssi::command("exec - -nosh $browser $url");
+	Irssi::command("exec - $browser $url > /dev/null");
 }
 
 sub privmsg_sig
