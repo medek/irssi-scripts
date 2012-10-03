@@ -57,6 +57,7 @@ sub UNLOAD {
 sub get_new_id {
 	$win_id = get_focused_id();
 }
+
 Irssi::signal_register($signal_config_hash);
 Irssi::signal_add('window created', 'deferred_setup');
 Irssi::command_bind('focus_get_new_id', 'get_new_id');

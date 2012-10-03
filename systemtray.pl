@@ -99,7 +99,6 @@ sub on_load {
 	Irssi::signal_add('focus change', 'sig_focus');
 }
 
-#this is probably wrong...
 sub UNLOAD {
 	Irssi::signal_remove('focus change', 'sig_focus');	
 	Irssi::timeout_remove($timer);
@@ -374,4 +373,3 @@ VEwxxRRTTDHFFFNMBaX/BxqpVwXfNj1GAAAAAElFTkSuQmCC'));
 
 Irssi::settings_add_bool('systemtray', 'systemtray_goto_status', 1);
 Irssi::settings_add_bool('systemtray', 'systemtray_update', 1);
-#Irssi::signal_add_first('command script unload', 'unload');

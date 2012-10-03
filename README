@@ -6,7 +6,12 @@ notify.pl slightly modified so it receives for 'focus change' signals
 and has a setting variable notify_enabled so it can be turned on/off
 explicitly.
 
-systemtray.pl currently has 2 options.
+focus.pl commands:
+	/focus_get_new_id
+		Get currently focused window id and use that for
+		tracking.
+
+systemtray.pl options:
 boolean - systemtray_update - default: on
 		Actually process data levels and focus.
 		Should really seperate them into seperate options.
@@ -16,6 +21,19 @@ boolean - systemtray_goto_status - default: on
 		to provide correct data level inspection.
 		The currently focused channel doesn't change
 		data levels.
+
+url.pl options:
+string - url_browser - default: x-www-browser
+		the browser to open the url
+
+int - url_max_id - default: 40
+		the maximum number of urls to track
+		once id == url_max_id it rolls over to zero
+		overwriting old urls
+
+url.pl commands:
+	/url <id>
+		open url with id <id>
 
 Bugs/Issues
 
