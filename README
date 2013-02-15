@@ -6,6 +6,15 @@ notify.pl slightly modified so it receives for 'focus change' signals
 and has a setting variable notify_enabled so it can be turned on/off
 explicitly.
 
+scripts under extern/ are scripts I use unmodified.
+
+Dependancies:
+systemtray.pl requires gtk2-trayicon perl bindings.
+notify.pl requires libnotify-bin as it uses notify-send.
+focus.pl will only work inside X.
+url.pl requires URI::Find package from cpan. 
+
+Commands and Options:
 focus.pl commands:
 	/focus_get_new_id
 		Get currently focused window id and use that for
@@ -47,3 +56,4 @@ it thinks the currently active window has focus. again use /focus_get_new_id to
 fix.
 
 Probably some more I can't think of...
+
