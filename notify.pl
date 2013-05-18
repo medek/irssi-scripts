@@ -36,10 +36,8 @@ sub sig_focus {
 }
 
 sub notify {
-    if(Irssi::settings_get_bool('notify_enabled') != 1 || $focus != 0)
-    {
-        return;
-    }
+    return if(Irssi::settings_get_bool('notify_enabled') != 1 || $focus != 0);
+
     my ($server, $summary, $message) = @_;
 
     # Make the message entity-safe
@@ -82,8 +80,18 @@ sub dcc_request_notify {
     notify($server, "DCC ".$dcc->{type}." request", $dcc->{nick});
 }
 
+#this is because actions in a pm don't get notified
+sub message_irc_action {
+    my ($server, $msg, $nick, $address, $target) = @_;
+    return if(!$server);
+    if(!$server->ischannel($target)) {
+        notify($server, "PM action", $nick . " " . $msg);
+    }
+}
+
 Irssi::signal_add_first('focus change', 'sig_focus');
 Irssi::signal_add('print text', 'print_text_notify');
 Irssi::signal_add('message private', 'message_private_notify');
+Irssi::signal_add('message irc action', 'message_irc_action');
 Irssi::signal_add('dcc request', 'dcc_request_notify');
 
