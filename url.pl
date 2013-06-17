@@ -40,7 +40,7 @@ sub url_command
 	for my $i (0..(scalar @args)-1)
 	{
 		$url = $urls[int $args[$i]];
-		Irssi::command("exec - $browser \"$url\" > /dev/null 2> /dev/null");
+		Irssi::command("exec - $browser '$url' > /dev/null 2> /dev/null");
 	}
 }
 
