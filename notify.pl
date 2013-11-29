@@ -9,7 +9,6 @@ use strict;
 use Irssi;
 use vars qw($VERSION %IRSSI);
 use HTML::Entities;
-
 $VERSION = "0.01";
 %IRSSI = (
     authors     => 'Luke Macken, Paul W. Frields, Gavin Massey',
@@ -36,10 +35,10 @@ sub sig_focus {
 }
 
 sub notify {
-    return if(Irssi::settings_get_bool('notify_enabled') != 1 || $focus != 0);
+    my ($server, $summary, $message, $override) = @_;
 
-    my ($server, $summary, $message) = @_;
-
+    return if(Irssi::settings_get_bool('notify_enabled') != 1
+		|| ($focus != 0 && $override == 0));
     # Make the message entity-safe
     $summary = sanitize(Irssi::strip_codes($summary));
     $message = sanitize(Irssi::strip_codes($message));
@@ -62,14 +61,14 @@ sub print_text_notify {
     $sender =~ s/^\<.([^\>]+)\>.+/\1/ ;
     $stripped =~ s/^\<.[^\>]+\>.// ;
     my $summary = $dest->{target} . ": " . $sender;
-    notify($server, $summary, $stripped);
+    notify($server, $summary, $stripped, 0);
 }
 
 sub message_private_notify {
     my ($server, $msg, $nick, $address) = @_;
 
     return if (!$server);
-    notify($server, "Private message from ".$nick, $msg);
+    notify($server, "Private message from ".$nick, $msg, 0);
 }
 
 sub dcc_request_notify {
@@ -77,7 +76,7 @@ sub dcc_request_notify {
     my $server = $dcc->{server};
 
     return if (!$dcc);
-    notify($server, "DCC ".$dcc->{type}." request", $dcc->{nick});
+    notify($server, "DCC ".$dcc->{type}." request", $dcc->{nick}, 1);
 }
 
 #this is because actions in a pm don't get notified
@@ -85,8 +84,24 @@ sub message_irc_action {
     my ($server, $msg, $nick, $address, $target) = @_;
     return if(!$server);
     if(!$server->ischannel($target)) {
-        notify($server, "PM action", $nick . " " . $msg);
+        notify($server, "PM action", $nick . " " . $msg, 0);
     }
+}
+
+sub user_joined {
+	my($server, $nick, $user, $host, $realname, $awaymsg) = @_;
+	notify($server, "$nick has joined", "$nick!$user\@$host", 1);
+}
+
+sub user_left {
+	my($server, $nick, $user, $host, $realname, $awaymsg) = @_;
+	notify($server, "$nick has left", "$nick!$user\@$host", 1);
+}
+
+sub user_away_change {
+	my($server, $nick, $user, $host, $realname, $awaymsg) = @_;
+	my $summery = length($awaymsg) > 0 ? "$nick is away" : "$nick is back";
+	notify($server, $summery, $awaymsg, 1);
 }
 
 Irssi::signal_add_first('focus change', 'sig_focus');
@@ -94,4 +109,7 @@ Irssi::signal_add('print text', 'print_text_notify');
 Irssi::signal_add('message private', 'message_private_notify');
 Irssi::signal_add('message irc action', 'message_irc_action');
 Irssi::signal_add('dcc request', 'dcc_request_notify');
+Irssi::signal_add('notifylist joined', 'user_joined');
+Irssi::signal_add('notifylist left', 'user_left');
+Irssi::signal_add('notifylist away changed', 'user_away_change');
 
